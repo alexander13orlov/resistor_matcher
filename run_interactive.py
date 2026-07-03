@@ -19,9 +19,9 @@ def print_header() -> None:
     print("RESISTOR MATCHER - интерактивный режим")
     print("=" * 80)
     print("Команды:")
-    print("  search --nominal 89.341 --n-results 5")
-    print("  search -n 89.341 -nr 5")
-    print("  s 89.341 5")
+    print("  search --nominal 89.341 --n-results 5 --size 1,2,3,4")
+    print("  search -n 89.341 -nr 5 -s 1,2")
+    print("  s 89.341 5 1,2")
     print("  help, h")
     print("  exit, quit, q")
     print("=" * 80)
@@ -49,16 +49,17 @@ def parse_command(line: str) -> Tuple[Optional[str], Optional[Dict[str, Any]]]:
     if cmd in ("help", "h"):
         return "help", None
 
-    # Сокращённый формат: s 89.341 5
+    # Сокращённый формат: s 89.341 5 1,2
     if cmd == "s" and len(parts) >= 2:
         try:
             nominal = float(parts[1])
             n_results = int(parts[2]) if len(parts) >= 3 else 5
-            return "search", {"nominal": nominal, "n_results": n_results}
+            size = parts[3] if len(parts) >= 4 else "1,2,3,4"
+            return "search", {"nominal": nominal, "n_results": n_results, "size": size}
         except ValueError:
             return None, None
 
-    # Полный формат: search --nominal 89.341 --n-results 5
+    # Полный формат: search --nominal 89.341 --n-results 5 --size 1,2
     if cmd == "search":
         args: Dict[str, Any] = {}
         i = 1
@@ -80,9 +81,16 @@ def parse_command(line: str) -> Tuple[Optional[str], Optional[Dict[str, Any]]]:
                         continue
                     except ValueError:
                         pass
+            elif arg in ("--size", "-s"):
+                if i + 1 < len(parts):
+                    args["size"] = parts[i + 1]
+                    i += 2
+                    continue
             i += 1
 
         if "nominal" in args:
+            if "size" not in args:
+                args["size"] = "1,2,3,4"
             return "search", args
 
     return None, None
@@ -113,6 +121,7 @@ def main() -> None:
             # Извлекаем значения с проверкой типа
             nominal_raw = args.get("nominal")
             n_results_raw = args.get("n_results", 5)
+            size = args.get("size", "1,2,3,4")
 
             # Проверяем, что nominal — это float
             if not isinstance(nominal_raw, (int, float)):
@@ -123,13 +132,13 @@ def main() -> None:
             n_results = int(n_results_raw) if isinstance(n_results_raw, (int, float)) else 5
 
             print("-" * 80)
-            print(f"Поиск для {nominal} Ом, {n_results} результатов...")
+            print(f"Поиск для {nominal} Ом, {n_results} результатов, размеры: {size}")
             print("-" * 80)
 
             start_time = time.time()
 
             try:
-                result = run_combined_search(nominal, n_results)
+                result = run_combined_search(nominal, n_results, size)
                 
                 elapsed = time.time() - start_time
                 print(f"\nВремя выполнения: {elapsed:.2f} сек")
