@@ -1,0 +1,39 @@
+# Виртуальное окружение
+.venv/
+venv/
+env/
+.env/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Данные (temp исключаем, основная база остается)
+db/temp/
+!db/temp/.gitkeep
+*.log
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Графики (можно исключить все сгенерированные)
+img/*.png
+img/*.svg
+img/*.pdf
+!img/.gitkeep
